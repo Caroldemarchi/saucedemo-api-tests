@@ -152,8 +152,8 @@ O relatório HTML é salvo como artefato de cada execução e fica disponível p
 
 ## 👤 Autor
 
-**Seu Nome**
-- LinkedIn: [linkedin.com/in/seuperfil](https://linkedin.com/in/seuperfil)
+**Caroline Louise De Marchi**
+- LinkedIn: [https://www.linkedin.com/in/caroline-louise-de-marchi/)
 - GitHub: [@seuusuario](https://github.com/seuusuario)
 
 ---
