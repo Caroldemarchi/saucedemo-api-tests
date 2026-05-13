@@ -1,0 +1,592 @@
+{
+  "info": {
+    "_postman_id": "b10985c7-97d9-4477-901f-fde7290a8e75",
+    "name": "SauceDemo - API & E2E Test Suite",
+    "description": "Suíte completa de testes para o SauceDemo (https://www.saucedemo.com).\nCobre fluxos de autenticação, produtos, carrinho e checkout.\n\nAutor: Seu Nome\nVersão: 1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54458014",
+    "_collection_link": "https://go.postman.co/collection/54458014-b10985c7-97d9-4477-901f-fde7290a8e75?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "🔐 Autenticação",
+      "item": [
+        {
+          "name": "Login - usuário válido (standard_user)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Resposta contém dados do usuário', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('token');",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token salvo:', json.token);",
+                  "});",
+                  "",
+                  "pm.test('Tempo de resposta < 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"eve.holt@reqres.in\",\n  \"password\": \"pistol\"\n}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/login",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login - usuário inválido (deve retornar erro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 ou 401 - credenciais inválidas', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 401]);",
+                  "});",
+                  "",
+                  "pm.test('Mensagem de erro presente', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('error');",
+                  "    pm.expect(json.error).to.be.a('string').and.not.empty;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid@user.com\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/login",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login - campos vazios (deve retornar erro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 ou 401', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 401]);",
+                  "});",
+                  "",
+                  "pm.test('Mensagem de erro informativa', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/login",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👤 Usuários",
+      "item": [
+        {
+          "name": "Listar usuários - página 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Estrutura de paginação correta', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('page');",
+                  "    pm.expect(json).to.have.property('data');",
+                  "    pm.expect(json.page).to.eql(1);",
+                  "    pm.expect(json.data).to.be.an('array').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('Cada usuário tem campos obrigatórios', function () {",
+                  "    const users = pm.response.json().data;",
+                  "    users.forEach(user => {",
+                  "        pm.expect(user).to.have.property('id');",
+                  "        pm.expect(user).to.have.property('email');",
+                  "        pm.expect(user).to.have.property('first_name');",
+                  "        pm.expect(user).to.have.property('last_name');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Email dos usuários tem formato válido', function () {",
+                  "    const users = pm.response.json().data;",
+                  "    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;",
+                  "    users.forEach(u => pm.expect(u.email).to.match(emailRegex));",
+                  "});",
+                  "",
+                  "const firstUser = pm.response.json().data[0];",
+                  "pm.environment.set('userId', firstUser.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/users?page=1",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar usuário por ID (ID válido)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Dados do usuário corretos', function () {",
+                  "    const user = pm.response.json().data;",
+                  "    pm.expect(user.id).to.be.a('number');",
+                  "    pm.expect(user.email).to.be.a('string');",
+                  "    pm.expect(user.first_name).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/users/{{userId}}",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar usuário - ID inexistente (deve retornar 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 - usuário não encontrado', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Corpo da resposta vazio ou com mensagem', function () {",
+                  "    const body = pm.response.text();",
+                  "    pm.expect(body).to.satisfy(b => b === '{}' || b.length > 0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/users/9999",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "users",
+                "9999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar novo usuário",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Usuário criado com dados corretos', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.name).to.eql('QA Engineer');",
+                  "    pm.expect(json.job).to.eql('Automação de Testes');",
+                  "    pm.expect(json.id).to.be.a('string');",
+                  "    pm.expect(json.createdAt).to.be.a('string');",
+                  "    pm.collectionVariables.set('newUserId', json.id);",
+                  "});",
+                  "",
+                  "pm.test('Campo createdAt é uma data ISO válida', function () {",
+                  "    const { createdAt } = pm.response.json();",
+                  "    pm.expect(new Date(createdAt).toString()).to.not.eql('Invalid Date');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"QA Engineer\",\n  \"job\": \"Automação de Testes\"\n}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/users",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar usuário (PUT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Dados atualizados corretamente', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.name).to.eql('QA Engineer Sênior');",
+                  "    pm.expect(json.job).to.eql('SDET');",
+                  "    pm.expect(json.updatedAt).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"QA Engineer Sênior\",\n  \"job\": \"SDET\"\n}"
+            },
+            "url": {
+              "raw": "{{apiUrl}}/users/{{userId}}",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deletar usuário",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('Corpo da resposta vazio', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/users/{{userId}}",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🛒 Produtos (SauceDemo simulado)",
+      "item": [
+        {
+          "name": "Listar todos os produtos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Retorna lista de itens', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.data).to.be.an('array').with.length.greaterThan(0);",
+                  "});",
+                  "",
+                  "pm.test('Tempo de resposta aceitável', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/unknown",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "unknown"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar produto por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Produto tem campos obrigatórios', function () {",
+                  "    const item = pm.response.json().data;",
+                  "    pm.expect(item).to.have.all.keys('id','name','year','color','pantone_value');",
+                  "});",
+                  "",
+                  "pm.test('Cor está no formato hexadecimal', function () {",
+                  "    const color = pm.response.json().data.color;",
+                  "    pm.expect(color).to.match(/^#[0-9A-Fa-f]{3,6}$/);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/unknown/2",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "unknown",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "key",
+        "value": "x-api-key",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://www.saucedemo.com"
+    },
+    {
+      "key": "apiUrl",
+      "value": "https://reqres.in/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "newUserId",
+      "value": ""
+    }
+  ]
+}

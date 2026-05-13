@@ -1,0 +1,12 @@
+{
+  "id": "saucedemo-env-2024",
+  "name": "SauceDemo - Environment",
+  "values": [
+    { "key": "baseUrl",    "value": "https://www.saucedemo.com", "enabled": true },
+    { "key": "apiUrl",     "value": "https://reqres.in/api",     "enabled": true },
+    { "key": "token",      "value": "",                          "enabled": true },
+    { "key": "userId",     "value": "2",                         "enabled": true },
+    { "key": "newUserId",  "value": "",                          "enabled": true }
+  ],
+  "_postman_variable_scope": "environment"
+}
